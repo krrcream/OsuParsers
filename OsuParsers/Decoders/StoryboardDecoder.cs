@@ -26,10 +26,7 @@ namespace OsuParsers.Decoders
         /// <returns>A usable storyboard.</returns>
         public static Storyboard Decode(string path)
         {
-            if (File.Exists(path))
-                return Decode(File.ReadAllLines(path));
-            else
-                throw new FileNotFoundException();
+            return Decode(File.ReadAllLines(path));
         }
 
         /// <summary>

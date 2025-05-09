@@ -18,10 +18,10 @@ namespace OsuParsers.Decoders
         /// <returns>A usable <see cref="OsuDatabase"/>.</returns>
         public static OsuDatabase DecodeOsu(string path)
         {
-            if (TryOpenReadFile(path, out var stream))
+            using (var stream = new FileStream(path, FileMode.Open)) 
+            { 
                 return DecodeOsu(stream);
-            else
-                throw new FileNotFoundException();
+            }
         }
 
         /// <summary>
@@ -137,10 +137,10 @@ namespace OsuParsers.Decoders
         /// <returns>A usable <see cref="CollectionDatabase"/>.</returns>
         public static CollectionDatabase DecodeCollection(string path)
         {
-            if (TryOpenReadFile(path, out var stream))
+            using (var stream = File.OpenRead(path)) 
+            {
                 return DecodeCollection(stream);
-            else
-                throw new FileNotFoundException();
+            }
         }
 
         /// <summary>
@@ -182,10 +182,10 @@ namespace OsuParsers.Decoders
         /// <returns>A usable <see cref="ScoresDatabase"/>.</returns>
         public static ScoresDatabase DecodeScores(string path)
         {
-            if (TryOpenReadFile(path, out var stream))
+            using (var stream = File.OpenRead(path))
+            {
                 return DecodeScores(stream);
-            else
-                throw new FileNotFoundException();
+            }
         }
 
         /// <summary>
@@ -246,10 +246,10 @@ namespace OsuParsers.Decoders
         /// <returns>A usable <see cref="PresenceDatabase"/>.</returns>
         public static PresenceDatabase DecodePresence(string path)
         {
-            if (TryOpenReadFile(path, out var stream))
+            using (var stream = File.OpenRead(path))
+            {
                 return DecodePresence(stream);
-            else
-                throw new FileNotFoundException();
+            }
         }
 
         /// <summary>
@@ -284,22 +284,6 @@ namespace OsuParsers.Decoders
             }
 
             return db;
-        }
-
-        // Tools
-
-        private static bool TryOpenReadFile(string path, out Stream stream)
-        {
-            if (File.Exists(path))
-            {
-                stream = new FileStream(path, FileMode.Open);
-                return true;
-            }
-            else
-            {
-                stream = null;
-                return false;
-            }
         }
     }
 }

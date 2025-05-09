@@ -21,10 +21,10 @@ namespace OsuParsers.Decoders
         /// <returns>A usable <see cref="Replay"/>.</returns>
         public static Replay Decode(string path)
         {
-            if (File.Exists(path))
-                return Decode(new FileStream(path, FileMode.Open));
-            else
-                throw new FileNotFoundException();
+            using(var stream = File.OpenRead(path)) 
+            {
+                return Decode(stream);
+            }
         }
 
         /// <summary>
