@@ -25,10 +25,7 @@ namespace OsuParsers.Decoders
         /// <returns>A usable beatmap.</returns>
         public static Beatmap Decode(string path)
         {
-            if (File.Exists(path))
-                return Decode(File.ReadAllLines(path));
-            else
-                throw new FileNotFoundException();
+            return Decode(File.ReadAllLines(path));
         }
 
         /// <summary>
