@@ -73,6 +73,29 @@ namespace OsuParsers.Tests
             }
         }
 
+        public void ParallelParseAll()
+        {
+            var timerAll = new Stopwatch();
+            timerAll.Start();
+            Parallel.ForEach(RawFiles, file =>
+            {
+                var timer = new Stopwatch();
+                timer.Start();
+                var beatmap = BeatmapDecoder.Decode(file);
+                timer.Stop();
+                Maps.Add(beatmap);
+                Trace.WriteLine(string.Format(
+                    "Beatmap parsed in {0}ms: {1} - {2} [{3}] created by {4}.",
+                    timer.Elapsed.Milliseconds,
+                    beatmap.MetadataSection.Artist,
+                    beatmap.MetadataSection.Title,
+                    beatmap.MetadataSection.Version,
+                    beatmap.MetadataSection.Creator));
+            });
+            timerAll.Stop();
+            Trace.WriteLine($"All beatmaps parsed in {timerAll.Elapsed.Milliseconds}ms.");
+        }
+
         private string BaseUrl => @"https://osu.ppy.sh/osu/";
 
         private List<uint> BeatmapIDs =  new List<uint>
@@ -101,6 +124,15 @@ namespace OsuParsers.Tests
 
             Trace.WriteLine("Parsing beatmaps...");
             ParseAll();
+        }
+
+        [TestMethod]
+        public async Task ParseAllTestingBeatmapsParallel()
+        {
+            RawFiles.Clear();
+            await GetTestingBeatmaps();
+            Trace.WriteLine("Parsing beatmaps in parallel...");
+            ParallelParseAll();
         }
 
         [DataTestMethod]

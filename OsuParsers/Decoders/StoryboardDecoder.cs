@@ -15,10 +15,6 @@ namespace OsuParsers.Decoders
 {
     public static class StoryboardDecoder
     {
-        private static Storyboard storyboard;
-        private static IStoryboardObject lastDrawable;
-        private static CommandGroup commandGroup;
-
         /// <summary>
         /// Parses .osb file.
         /// </summary>
@@ -35,9 +31,28 @@ namespace OsuParsers.Decoders
         /// <summary>
         /// Parses .osb file.
         /// </summary>
+        /// <param name="stream">Stream containing storyboard data.</param>
+        /// <returns>A usable storyboard.</returns>
+        public static Storyboard Decode(Stream stream) => Decode(stream.ReadAllLines());
+
+        /// <summary>
+        /// Parses .osb file.
+        /// </summary>
         /// <param name="lines">Array of text lines containing storyboard data.</param>
         /// <returns>A usable storyboard.</returns>
         public static Storyboard Decode(IEnumerable<string> lines)
+        {
+            return new StoryboardDecodeTask().Run(lines);
+        }
+    }
+    
+    internal class StoryboardDecodeTask
+    {
+        private Storyboard storyboard;
+        private IStoryboardObject lastDrawable;
+        private CommandGroup commandGroup;
+
+        public Storyboard Run(IEnumerable<string> lines)
         {
             storyboard = new Storyboard();
             lastDrawable = null;
@@ -65,14 +80,7 @@ namespace OsuParsers.Decoders
             return storyboard;
         }
 
-        /// <summary>
-        /// Parses .osb file.
-        /// </summary>
-        /// <param name="stream">Stream containing storyboard data.</param>
-        /// <returns>A usable storyboard.</returns>
-        public static Storyboard Decode(Stream stream) => Decode(stream.ReadAllLines());
-
-        private static string ParseVariables(string line)
+        private string ParseVariables(string line)
         {
             if (storyboard.Variables == null || line.IndexOf('$') < 0)
                 return line;
@@ -83,7 +91,7 @@ namespace OsuParsers.Decoders
             return line;
         }
 
-        private static void ParseSbObject(string line)
+        private void ParseSbObject(string line)
         {
             string[] tokens = line.Split(',');
 
@@ -129,7 +137,7 @@ namespace OsuParsers.Decoders
             }
         }
 
-        private static void ParseSbCommand(string line)
+        private void ParseSbCommand(string line)
         {
             int depth = 0;
             while (line.StartsWith(" ") || line.StartsWith("_"))

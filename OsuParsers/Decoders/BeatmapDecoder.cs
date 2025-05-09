@@ -18,10 +18,6 @@ namespace OsuParsers.Decoders
 {
     public static class BeatmapDecoder
     {
-        private static Beatmap Beatmap;
-        private static FileSections currentSection = FileSections.None;
-        private static List<string> sbLines = new List<string>();
-
         /// <summary>
         /// Parses .osu file.
         /// </summary>
@@ -38,9 +34,28 @@ namespace OsuParsers.Decoders
         /// <summary>
         /// Parses .osu file.
         /// </summary>
+        /// <param name="stream">Stream containing beatmap data.</param>
+        /// <returns>A usable beatmap.</returns>
+        public static Beatmap Decode(Stream stream) => Decode(stream.ReadAllLines());
+
+        /// <summary>
+        /// Parses .osu file.
+        /// </summary>
         /// <param name="lines">Array of text lines containing beatmap data.</param>
         /// <returns>A usable beatmap.</returns>
         public static Beatmap Decode(IEnumerable<string> lines)
+        {
+            return new BeatmapDecodeTask().Run(lines);
+        }
+    }
+
+    internal class BeatmapDecodeTask 
+    {
+        private Beatmap Beatmap;
+        private FileSections currentSection = FileSections.None;
+        private List<string> sbLines = new List<string>();
+
+        public Beatmap Run(IEnumerable<string> lines)
         {
             Beatmap = new Beatmap();
             currentSection = FileSections.Format;
@@ -68,14 +83,7 @@ namespace OsuParsers.Decoders
             return Beatmap;
         }
 
-        /// <summary>
-        /// Parses .osu file.
-        /// </summary>
-        /// <param name="stream">Stream containing beatmap data.</param>
-        /// <returns>A usable beatmap.</returns>
-        public static Beatmap Decode(Stream stream) => Decode(stream.ReadAllLines());
-
-        private static void ParseLine(string line)
+        private void ParseLine(string line)
         {
             switch (currentSection)
             {
@@ -109,7 +117,7 @@ namespace OsuParsers.Decoders
             }
         }
 
-        private static void ParseGeneral(string line)
+        private void ParseGeneral(string line)
         {
             int index = line.IndexOf(':');
             string variable = line.Remove(index).Trim();
@@ -160,7 +168,7 @@ namespace OsuParsers.Decoders
             }
         }
 
-        private static void ParseEditor(string line)
+        private void ParseEditor(string line)
         {
             int index = line.IndexOf(':');
             string variable = line.Remove(index).Trim();
@@ -186,7 +194,7 @@ namespace OsuParsers.Decoders
             }
         }
 
-        private static void ParseMetadata(string line)
+        private void ParseMetadata(string line)
         {
             int index = line.IndexOf(':');
             string variable = line.Remove(index).Trim();
@@ -227,7 +235,7 @@ namespace OsuParsers.Decoders
             }
         }
 
-        private static void ParseDifficulty(string line)
+        private void ParseDifficulty(string line)
         {
             int index = line.IndexOf(':');
             string variable = line.Remove(index).Trim();
@@ -256,7 +264,7 @@ namespace OsuParsers.Decoders
             }
         }
 
-        private static void ParseEvents(string line)
+        private void ParseEvents(string line)
         {
             string[] tokens = line.Split(',');
 
@@ -290,7 +298,7 @@ namespace OsuParsers.Decoders
             }
         }
 
-        private static void ParseTimingPoints(string line)
+        private void ParseTimingPoints(string line)
         {
             string[] tokens = line.Split(',');
 
@@ -334,7 +342,7 @@ namespace OsuParsers.Decoders
             });
         }
 
-        private static void ParseColours(string line)
+        private void ParseColours(string line)
         {
             int index = line.IndexOf(':');
             string variable = line.Remove(index).Trim();
@@ -354,7 +362,7 @@ namespace OsuParsers.Decoders
             }
         }
 
-        private static void ParseHitObjects(string line)
+        private void ParseHitObjects(string line)
         {
             string[] tokens = line.Split(',');
 
