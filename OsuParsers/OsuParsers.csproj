@@ -10,8 +10,8 @@
     <RepositoryUrl>https://github.com/krrcream/OsuParsers</RepositoryUrl>
     <PackageProjectUrl>https://github.com/krrcream/OsuParsers</PackageProjectUrl>
     <AssemblyVersion>1.8.0.1</AssemblyVersion>
-    <FileVersion>1.8.0.0</FileVersion>
-    <PackageVersion>1.8.0</PackageVersion>
+    <FileVersion>1.8.0.1</FileVersion>
+    <PackageVersion>1.8.0.1</PackageVersion>
     <PackageId>krrcream.OsuParsers</PackageId>
     <LangVersion>9.0</LangVersion>
   </PropertyGroup>
