@@ -4,7 +4,9 @@ using OsuParsers.Beatmaps.Sections;
 using OsuParsers.Helpers;
 using System.Collections.Generic;
 using System.IO;
+using OsuParsers.Beatmaps.Objects.Mania;
 using OsuParsers.Encoders;
+using OsuParsers.Enums;
 
 namespace OsuParsers.Beatmaps
 {
@@ -66,6 +68,18 @@ namespace OsuParsers.Beatmaps
         public void Save(string path)
         {
             File.WriteAllLines(path, BeatmapEncoder.Encode(this));
+        }
+
+        public void SetCircleSizeAndMoveNote(int circleSize)
+        {
+            if (GeneralSection.Mode != Ruleset.Mania)
+            {
+                return; // 提前退出方法
+            }
+            foreach (ManiaNote note in HitObjects)
+            {
+                note.NoteCircleSize = circleSize;
+            }
         }
     }
 

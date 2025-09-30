@@ -88,27 +88,7 @@ namespace OsuParsers.Decoders
             Beatmap.GeneralSection.Length = Beatmap.HitObjects.Any() ? Beatmap.HitObjects.Last().EndTime : 0;
             
             ProcessBPMEvent();
-            
-            if (Beatmap.GeneralSection.Mode == Ruleset.Mania)
-            {
-                int CS = (int)Beatmap.DifficultySection.CircleSize;
-                int rowIndex = 0;
-                var sortedObjects = Beatmap.HitObjects
-                    .OrderBy(h => h.StartTime)
-                    .ThenBy(h => h.Position.X)
-                    .Select((hitObject, index) =>
-                    {
-                        if (hitObject is ManiaNote maniaNote)
-                        {
-                            maniaNote.RowIndex = index; 
-                            maniaNote.InitializeRowData(CS);
-                            maniaNote.BeatLengthOfThisNote = GetBeatLengthForTime(maniaNote.StartTime);
-                        }
-                        return hitObject;
-                    })
-                    .ToList();
-                Beatmap.HitObjects = sortedObjects;
-            }
+            ProcessManiaNotes();
             
             return Beatmap;
         }
@@ -388,35 +368,38 @@ namespace OsuParsers.Decoders
 
         private void ProcessBPMEvent()
         {
-            List<TimingPoint> temp = new List<TimingPoint>();
-            foreach (var T in Beatmap.TimingPoints)
-            {
-                if (T.BeatLength > 0)
-                {
-                    temp.Add(T);
-                }
-            }
-            for (int i = 0; i < temp.Count; i++)
+            for (int i = 0; i < Beatmap.TimingPoints.Count; i++)
             {   
-                var TP = temp[i];
-                var nextOffset = (i + 1 < temp.Count) ? 
-                    temp[i + 1].Offset : 
+                var TP =  Beatmap.TimingPoints[i];
+                var nextOffset = (i + 1 <  Beatmap.TimingPoints.Count) ? 
+                    Beatmap.TimingPoints[i + 1].Offset : 
                     Beatmap.GeneralSection.Length;
-                
+                double calculatedBPM = TP.BeatLength != 0 ? (Math.Round(60000.0 / Math.Abs(TP.BeatLength),3)) : 0;
                 var bpmEvent = new BPMEvent
                 {
                     Offset = TP.Offset,
-                    BPM = TP.BPM,
+                    BPM = calculatedBPM,
                     BeatLength = TP.BeatLength,
-                    Duration = nextOffset - TP.Offset
+                    Duration = (nextOffset - TP.Offset)
                 };
                 Beatmap.BPMEvents.Add(bpmEvent);
             }
-            
             Beatmap.BPMEvents.Sort((x, y) => x.Offset.CompareTo(y.Offset));
-            
             Beatmap.MaxBPM = Beatmap.BPMEvents.Max(x => x.BPM);
             Beatmap.MinBPM = Beatmap.BPMEvents.Min(x => x.BPM);
+            Beatmap.BPMEvents.RemoveAll(bpmEvent => bpmEvent.BeatLength < 0);
+            for (int i = 0; i < Beatmap.BPMEvents.Count; i++)
+            {
+                if (i < Beatmap.BPMEvents.Count - 1)
+                {
+                    Beatmap.BPMEvents[i].Duration = Beatmap.BPMEvents[i + 1].Offset - Beatmap.BPMEvents[i].Offset;
+                }
+                else
+                {
+                    Beatmap.BPMEvents[i].Duration = Beatmap.GeneralSection.Length - Beatmap.BPMEvents[i].Offset;
+                }
+            }
+            
             var groupedBPMs = Beatmap.BPMEvents
                 .GroupBy(x => Math.Round(x.BPM / 0.00005) * 0.00005) // 将相差不大于0.00005的BPM视为同一组
                 .Select(g => new { 
@@ -426,6 +409,30 @@ namespace OsuParsers.Decoders
                 .OrderByDescending(x => x.TotalDuration)
                 .FirstOrDefault();
             Beatmap.MainBPM = groupedBPMs?.BPM ?? -1;
+        }
+
+        private void ProcessManiaNotes()
+        {
+            if (Beatmap.GeneralSection.Mode == Ruleset.Mania)
+            {
+                int CS = (int)Beatmap.DifficultySection.CircleSize;
+                int rowIndex = 0;
+                var sortedObjects = Beatmap.HitObjects
+                    .OrderBy(h => h.StartTime)
+                    .ThenBy(h => h.Position.X)
+                    .Select((hitObject, index) =>
+                    {
+                        if (hitObject is ManiaNote maniaNote)
+                        {
+                            maniaNote.RowIndex = index; 
+                            maniaNote.InitializeRowData(CS);
+                            maniaNote.BeatLengthOfThisNote = GetBeatLengthForTime(maniaNote.StartTime);
+                        }
+                        return hitObject;
+                    })
+                    .ToList();
+                Beatmap.HitObjects = sortedObjects;
+            }
         }
         
         private void ParseColours(string line)
