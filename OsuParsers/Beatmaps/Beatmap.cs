@@ -1,3 +1,4 @@
+using System;
 using OsuParsers.Beatmaps.Objects;
 using OsuParsers.Beatmaps.Sections;
 using OsuParsers.Helpers;
@@ -18,10 +19,15 @@ namespace OsuParsers.Beatmaps
         public BeatmapDifficultySection DifficultySection { get; set; } = new BeatmapDifficultySection();
         public BeatmapEventsSection EventsSection { get; set; } = new BeatmapEventsSection();
         public BeatmapColoursSection ColoursSection { get; set; } = new BeatmapColoursSection();
-
         public List<TimingPoint> TimingPoints { get; set; } = new List<TimingPoint>();
         public List<HitObject> HitObjects { get; set; } = new List<HitObject>();
-
+        public string OriginalFilePath { get; set; } = "";
+        public List<BPMEvent> BPMEvents { get; set; } = new List<BPMEvent>();
+        public double MainBPM { get; set; } = 120 ;
+        public double MaxBPM { get; set; } = 120 ;
+        public double MinBPM { get; set; } = 120 ;
+        
+        
         /// <summary>
         /// Returns nearest beat length from the given offset.
         /// </summary>
@@ -62,4 +68,5 @@ namespace OsuParsers.Beatmaps
             File.WriteAllLines(path, BeatmapEncoder.Encode(this));
         }
     }
+
 }

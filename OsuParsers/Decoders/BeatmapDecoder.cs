@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using OsuParsers.Beatmaps.Sections;
 
 namespace OsuParsers.Decoders
 {
@@ -25,7 +26,9 @@ namespace OsuParsers.Decoders
         /// <returns>A usable beatmap.</returns>
         public static Beatmap Decode(string path)
         {
-            return Decode(File.ReadAllLines(path));
+            var lines = File.ReadAllLines(path);
+            var decoder = new BeatmapDecodeTask(path); 
+            return decoder.Run(lines);
         }
 
         /// <summary>
@@ -49,12 +52,19 @@ namespace OsuParsers.Decoders
     internal class BeatmapDecodeTask 
     {
         private Beatmap Beatmap;
+        private string filePath = "";
         private FileSections currentSection = FileSections.None;
         private List<string> sbLines = new List<string>();
-
+        
+        public BeatmapDecodeTask(string path = "")
+        {
+            this.filePath = path;
+        }
+        
         public Beatmap Run(IEnumerable<string> lines)
         {
             Beatmap = new Beatmap();
+            Beatmap.OriginalFilePath = filePath;
             currentSection = FileSections.Format;
             sbLines.Clear();
 
@@ -77,6 +87,17 @@ namespace OsuParsers.Decoders
 
             Beatmap.GeneralSection.Length = Beatmap.HitObjects.Any() ? Beatmap.HitObjects.Last().EndTime : 0;
 
+            if (Beatmap.GeneralSection.Mode == Ruleset.Mania)
+            {
+                Beatmap.HitObjects.Sort((a, b) => {
+                    int startTimeComparison = a.StartTime.CompareTo(b.StartTime);
+                    if (startTimeComparison != 0)
+                        return startTimeComparison;
+                    return a.Position.X.CompareTo(b.Position.X);
+                });
+                ProcessBPMEvent();
+            }
+            
             return Beatmap;
         }
 
@@ -339,6 +360,48 @@ namespace OsuParsers.Decoders
             });
         }
 
+        private void ProcessBPMEvent()
+        {
+            List<TimingPoint> temp = new List<TimingPoint>();
+            foreach (var T in Beatmap.TimingPoints)
+            {
+                if (T.BeatLength > 0)
+                {
+                    temp.Add(T);
+                }
+            }
+            for (int i = 0; i < temp.Count; i++)
+            {   
+                var TP = temp[i];
+                var nextOffset = (i + 1 < temp.Count) ? 
+                    temp[i + 1].Offset : 
+                    Beatmap.GeneralSection.Length;
+                
+                var bpmEvent = new BPMEvent
+                {
+                    Offset = TP.Offset,
+                    BPM = TP.BPM,
+                    BeatLength = TP.BeatLength,
+                    Duration = nextOffset - TP.Offset
+                };
+                Beatmap.BPMEvents.Add(bpmEvent);
+            }
+            
+            Beatmap.BPMEvents.Sort((x, y) => x.Offset.CompareTo(y.Offset));
+            
+            Beatmap.MaxBPM = Beatmap.BPMEvents.Max(x => x.BPM);
+            Beatmap.MinBPM = Beatmap.BPMEvents.Min(x => x.BPM);
+            var groupedBPMs = Beatmap.BPMEvents
+                .GroupBy(x => Math.Round(x.BPM / 0.00005) * 0.00005) // 将相差不大于0.00005的BPM视为同一组
+                .Select(g => new { 
+                    BPM = g.Key, 
+                    TotalDuration = g.Sum(x => x.Duration) 
+                })
+                .OrderByDescending(x => x.TotalDuration)
+                .FirstOrDefault();
+            Beatmap.MainBPM = groupedBPMs?.BPM ?? -1;
+        }
+        
         private void ParseColours(string line)
         {
             int index = line.IndexOf(':');
@@ -464,8 +527,17 @@ namespace OsuParsers.Decoders
                 }
                     break;
             }
-
+            
             Beatmap.HitObjects.Add(hitObject);
+        }
+
+        private void processManiaHitObject()
+        {
+            if (Beatmap.GeneralSection.Mode == Ruleset.Mania)
+            {
+                int CS = (int)Beatmap.DifficultySection.CircleSize;
+                
+            }
         }
     }
 }
