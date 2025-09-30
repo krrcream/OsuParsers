@@ -86,8 +86,12 @@ namespace OsuParsers.Beatmaps.Objects.Mania
             }
         }
         
-        public virtual int HoldLength => 0;
-        
+        public virtual int HoldLength
+        {
+            get => 0;
+            set {  }
+        }
+
         public ManiaNote(Vector2 position, int startTime, int endTime, HitSoundType hitSound, Extras extras, bool isNewCombo, int comboOffset)
             : base(position, startTime, endTime, hitSound, extras, isNewCombo, comboOffset)
         {

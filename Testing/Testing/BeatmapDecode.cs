@@ -6,25 +6,32 @@ using OsuParsers.Decoders;
 
 Beatmap beatmap1 = BeatmapDecoder
     .Decode(@"C:\Users\klcof\RiderProjects\OsuParsers\Testing\Testing\DecodeTest\Tino & Cha Shao Jun feat. Orihara RuruMashiro KanonHiiroLing Yuan Yousa - Chun Ri You (krrcream) [(LV.13) Another].osu");
-
 //HOW TO USE (WHEN MODE IS MANIA)
+Console.WriteLine("PathProperty");
+Console.WriteLine($"beatmap1.OriginalFilePath={beatmap1.OriginalFilePath}"); 
+Console.WriteLine();
 List<ManiaNote> allManiaObjects = beatmap1.HitObjects.OfType<ManiaNote>().ToList();
 
 var Note  = allManiaObjects[1];
-var LN = allManiaObjects[2];
 Console.WriteLine($"Beford change index note.Position.X: {beatmap1.HitObjects[1].Position.X}");
 if (Note is ManiaNote maniaNote)
 {
     maniaNote.ColIndex = 0;
 }
+Console.WriteLine($"Run maniaNote.ColIndex = 0;");
 Console.WriteLine($"After change index note.Position.X: {beatmap1.HitObjects[1].Position.X}");
+Console.WriteLine();
 
+var LN = allManiaObjects[2];
+Console.WriteLine($"Beford change HoldLength: {beatmap1.HitObjects[2].EndTime}");
+LN.HoldLength = 9999;
+Console.WriteLine($"Run LN.HoldLength = 9999;");
+Console.WriteLine($"After change HoldLength: {beatmap1.HitObjects[2].EndTime}");
+Console.WriteLine();
 
-
-
-Console.WriteLine($"=========================================");
-Console.WriteLine($"ALL Note Properties");
-PrintProperties(Note);
+// Console.WriteLine($"=========================================");
+// Console.WriteLine($"ALL Note Properties");
+// PrintProperties(Note);
 Console.WriteLine();
 Console.WriteLine($"ALL LN Properties");
 PrintProperties(LN);
