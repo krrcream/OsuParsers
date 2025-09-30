@@ -5,8 +5,10 @@
     <Authors>mrflashstudio</Authors>
     <Company />
     <Version>1.8.0</Version>
-    <Description>Library for parsing/writing files associated with osu!</Description>
+    <Description>Forked for easier modification of Mania beatmaps</Description>
     <Copyright></Copyright>
+    <RepositoryUrl>https://github.com/krrcream/OsuParsers</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/krrcream/OsuParsers</PackageProjectUrl>
     <AssemblyVersion>1.8.0.0</AssemblyVersion>
     <FileVersion>1.8.0.0</FileVersion>
     <PackageVersion>1.8.0</PackageVersion>
