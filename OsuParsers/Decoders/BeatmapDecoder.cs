@@ -86,19 +86,45 @@ namespace OsuParsers.Decoders
             Beatmap.GeneralSection.SpinnersCount = Beatmap.HitObjects.Count(c => c is Spinner || c is TaikoSpinner || c is CatchBananaRain);
 
             Beatmap.GeneralSection.Length = Beatmap.HitObjects.Any() ? Beatmap.HitObjects.Last().EndTime : 0;
-
+            
+            ProcessBPMEvent();
+            
             if (Beatmap.GeneralSection.Mode == Ruleset.Mania)
             {
-                Beatmap.HitObjects.Sort((a, b) => {
-                    int startTimeComparison = a.StartTime.CompareTo(b.StartTime);
-                    if (startTimeComparison != 0)
-                        return startTimeComparison;
-                    return a.Position.X.CompareTo(b.Position.X);
-                });
-                ProcessBPMEvent();
+                int CS = (int)Beatmap.DifficultySection.CircleSize;
+                int rowIndex = 0;
+                var sortedObjects = Beatmap.HitObjects
+                    .OrderBy(h => h.StartTime)
+                    .ThenBy(h => h.Position.X)
+                    .Select((hitObject, index) =>
+                    {
+                        if (hitObject is ManiaNote maniaNote)
+                        {
+                            maniaNote.RowIndex = index; 
+                            maniaNote.InitializeRowData(CS);
+                            maniaNote.BeatLengthOfThisNote = GetBeatLengthForTime(maniaNote.StartTime);
+                        }
+                        return hitObject;
+                    })
+                    .ToList();
+                Beatmap.HitObjects = sortedObjects;
             }
             
             return Beatmap;
+        }
+        
+        private int GetBeatLengthForTime(int time)
+        {
+            if (Beatmap.BPMEvents.Count == 0)
+                return 500; // 默认值
+            for (int i = Beatmap.BPMEvents.Count - 1; i >= 0; i--)
+            {
+                if (time >= Beatmap.BPMEvents[i].Offset)
+                {
+                    return (int)Math.Round(Beatmap.BPMEvents[i].BeatLength);
+                }
+            }
+            return (int)Math.Round(Beatmap.BPMEvents[0].BeatLength);
         }
 
         private void ParseLine(string line)

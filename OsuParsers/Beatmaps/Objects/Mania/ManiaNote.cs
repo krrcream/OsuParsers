@@ -13,8 +13,8 @@ namespace OsuParsers.Beatmaps.Objects.Mania
         private bool _isColIndexManuallySet = false;
         private bool _isFirstSetNoteCircleSize = true;
         
-        //in this StartTime's BeatDuration. default is 500ms
-        public int BeatDurationOfThisNote { get; set; } = 500; 
+        //in this StartTime's BeatLength. default is 500ms
+        public int BeatLengthOfThisNote { get; set; } = 500; 
         
         //use to generate matrix
         public int? ColIndex
@@ -170,7 +170,7 @@ namespace OsuParsers.Beatmaps.Objects.Mania
             {24, new int[] {10, 31, 52, 74, 95, 116, 138, 159, 180, 202, 223, 244, 266, 287, 308, 330, 351, 372, 394, 415, 436, 458, 479, 500}}
         };
         
-        public void InitializeMatrixData(int circleSize)
+        public void InitializeRowData(int circleSize)
         {
             NoteCircleSize = circleSize;
             ColIndex = GetColumn(circleSize);
