@@ -4,7 +4,7 @@
     <RootNamespace>OsuParsers</RootNamespace>
     <Authors>mrflashstudio</Authors>
     <Company />
-    <Version>1.8.0</Version>
+    <Version>1.8.0.1</Version>
     <Description>Forked for easier modification of Mania beatmaps</Description>
     <Copyright></Copyright>
     <RepositoryUrl>https://github.com/krrcream/OsuParsers</RepositoryUrl>
