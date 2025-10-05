@@ -4,6 +4,7 @@ using OsuParsers.Beatmaps.Sections;
 using OsuParsers.Helpers;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using OsuParsers.Beatmaps.Objects.Mania;
 using OsuParsers.Encoders;
 using OsuParsers.Enums;
@@ -80,6 +81,35 @@ namespace OsuParsers.Beatmaps
             {
                 note.NoteCircleSize = circleSize;
             }
+        }
+
+        public (int[,], List<int>) getMTXandTimeAxis()
+        {
+            if (GeneralSection.Mode != Ruleset.Mania)
+                throw new InvalidOperationException("当前模式不是Mania模式，无法执行此操作");
+    
+            List<ManiaNote> ManiaObjects = HitObjects.OfType<ManiaNote>().ToList();
+            int[,] MTX = new int[ManiaObjects.Last().RowIndex.Value + 1, (int)GeneralSection.CirclesCount];
+    
+            // 填充MTX矩阵
+            for (int i = 0; i < ManiaObjects.Count; i++)
+            {
+                var obj = ManiaObjects[i];
+                MTX[obj.RowIndex.Value, obj.ColIndex.Value] = i; 
+            }
+    
+            // 创建每行第一个对象的StartTime列表
+            List<int> firstObjectStartTimes = new List<int>();
+            var groupedByRow = ManiaObjects.GroupBy(obj => obj.RowIndex.Value)
+                .OrderBy(g => g.Key);
+    
+            foreach (var group in groupedByRow)
+            {
+                var firstObjectInRow = group.OrderBy(obj => obj.StartTime).First();
+                firstObjectStartTimes.Add(firstObjectInRow.StartTime);
+            }
+    
+            return (MTX, firstObjectStartTimes);
         }
     }
 
