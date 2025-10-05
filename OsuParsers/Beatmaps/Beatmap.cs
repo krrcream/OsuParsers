@@ -89,7 +89,7 @@ namespace OsuParsers.Beatmaps
                 throw new InvalidOperationException("当前模式不是Mania模式，无法执行此操作");
     
             List<ManiaNote> ManiaObjects = HitObjects.OfType<ManiaNote>().ToList();
-            int[,] MTX = new int[ManiaObjects.Last().RowIndex.Value + 1, (int)GeneralSection.CirclesCount];
+            int[,] MTX = new int[ManiaObjects.Last().RowIndex.Value + 1, (int)DifficultySection.CircleSize];
             for (int i = 0; i < ManiaObjects.Count; i++)
             {
                 var obj = ManiaObjects[i];
