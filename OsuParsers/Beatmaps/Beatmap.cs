@@ -90,6 +90,13 @@ namespace OsuParsers.Beatmaps
     
             List<ManiaNote> ManiaObjects = HitObjects.OfType<ManiaNote>().ToList();
             int[,] MTX = new int[ManiaObjects.Last().RowIndex.Value + 1, (int)DifficultySection.CircleSize];
+            for (int i = 0; i < MTX.GetLength(0); i++)
+            {
+                for (int j = 0; j < MTX.GetLength(1); j++)
+                {
+                    MTX[i, j] = -1;
+                }
+            }
             for (int i = 0; i < ManiaObjects.Count; i++)
             {
                 var obj = ManiaObjects[i];
