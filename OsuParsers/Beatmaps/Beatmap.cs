@@ -30,6 +30,38 @@ namespace OsuParsers.Beatmaps
         public double MaxBPM { get; set; } = 120 ;
         public double MinBPM { get; set; } = 120 ;
         
+        public List<ManiaNote> ManiaNotes
+        {
+            get
+            {
+                if (GeneralSection.Mode == Ruleset.Mania)
+                {
+                    return HitObjects.OfType<ManiaNote>().ToList();
+                }
+                return new List<ManiaNote>();
+            }
+        }
+        
+        public int Rows
+        {
+            get
+            {
+                if (GeneralSection.Mode != Ruleset.Mania)
+                    return 0;
+            
+                return ManiaNotes.LastOrDefault()?.RowIndex.Value + 1 ?? 0;
+            }
+        }
+        
+        public int OrgKeys
+        {
+            get
+            {
+                if (GeneralSection.Mode != Ruleset.Mania)
+                    return 0;
+                return (int)DifficultySection.CircleSize;
+            }
+        }
         
         /// <summary>
         /// Returns nearest beat length from the given offset.
@@ -82,37 +114,138 @@ namespace OsuParsers.Beatmaps
                 note.NoteCircleSize = circleSize;
             }
         }
-
-        public (int[,], List<int>) getMTXandTimeAxis()
+        
+        public List<int> getEndTimeList()
         {
             if (GeneralSection.Mode != Ruleset.Mania)
                 throw new InvalidOperationException("当前模式不是Mania模式，无法执行此操作");
-    
-            List<ManiaNote> ManiaObjects = HitObjects.OfType<ManiaNote>().ToList();
-            int[,] MTX = new int[ManiaObjects.Last().RowIndex.Value + 1, (int)DifficultySection.CircleSize];
-            for (int i = 0; i < MTX.GetLength(0); i++)
+            
+            var uniqueEndTimes = new HashSet<int>();
+            foreach (var note in ManiaNotes)
             {
-                for (int j = 0; j < MTX.GetLength(1); j++)
+                uniqueEndTimes.Add(note.EndTime);
+            }
+            
+            return uniqueEndTimes.OrderBy(t => t).ToList();
+        }
+        
+        public (Matrix, List<int>) getMTXandTimeAxis()
+        {
+            if (GeneralSection.Mode != Ruleset.Mania)
+                throw new InvalidOperationException("当前模式不是Mania模式，无法执行此操作");
+
+            // 获取所有唯一的时间点并排序
+            var uniqueStartTimes = ManiaNotes.Select(n => n.StartTime).Distinct().OrderBy(t => t).ToList();
+    
+            int timeCount = uniqueStartTimes.Count;
+            int keyCount = OrgKeys;
+
+            // 创建矩阵
+            var MTX = new Matrix(timeCount, keyCount);
+            
+            // 填充矩阵
+            for (int i = 0; i < ManiaNotes.Count; i++)
+            {
+                var note = ManiaNotes[i];
+                int timeIndex = uniqueStartTimes.IndexOf(note.StartTime);
+                int colIndex = note.ColIndex.Value;
+        
+                // 如果该位置已经有值，则需要特殊处理（例如Long Note）
+                if (MTX[timeIndex, colIndex] != Matrix.Empty)
                 {
-                    MTX[i, j] = -1;
+                    // 可能需要处理重叠音符的情况
+                }
+        
+                MTX[timeIndex, colIndex] = i;
+            }
+
+            return (MTX, uniqueStartTimes);
+        }
+
+        public (Matrix, List<int>) getExpandHoldBodyMTXandTimeAxis()
+        {
+            if (GeneralSection.Mode != Ruleset.Mania)
+                throw new InvalidOperationException("当前模式不是Mania模式，无法执行此操作");
+            (Matrix m, List<int> t) = getMTXandTimeAxis();
+            return ExpandHoldBody(m, t);
+        }
+        
+        private (Matrix, List<int>) ExpandHoldBody(Matrix matrix, List<int> timeAxis)
+        {
+            var allTimes = new HashSet<int>(timeAxis);
+            foreach (var endTime in getEndTimeList())
+            {
+                allTimes.Add(endTime);
+            }
+    
+            var newTimeAxis = allTimes.OrderBy(t => t).ToList();
+            
+            var newMatrix = new Matrix(newTimeAxis.Count, matrix.Cols);
+            
+            int oldTimeIndex = 0;
+            int newTimeIndex = 0;
+    
+            while (newTimeIndex < newTimeAxis.Count && oldTimeIndex < timeAxis.Count)
+            {
+                if (newTimeAxis[newTimeIndex] == timeAxis[oldTimeIndex])
+                {
+                    // 复制原有行数据
+                    for (int col = 0; col < matrix.Cols; col++)
+                    {
+                        newMatrix[newTimeIndex, col] = matrix[oldTimeIndex, col];
+                    }
+                    oldTimeIndex++;
+                    newTimeIndex++;
+                }
+                else if (newTimeAxis[newTimeIndex] < timeAxis[oldTimeIndex])
+                {
+                    // 插入新行，填充为Empty
+                    for (int col = 0; col < matrix.Cols; col++)
+                    {
+                        newMatrix[newTimeIndex, col] = Matrix.Empty;
+                    }
+                    newTimeIndex++;
+                }
+                else
+                {
+                    oldTimeIndex++;
                 }
             }
-            for (int i = 0; i < ManiaObjects.Count; i++)
-            {
-                var obj = ManiaObjects[i];
-                MTX[obj.RowIndex.Value, obj.ColIndex.Value] = i; 
-            }
-            List<int> firstObjectStartTimes = new List<int>();
-            var groupedByRow = ManiaObjects.GroupBy(obj => obj.RowIndex.Value)
-                .OrderBy(g => g.Key);
     
-            foreach (var group in groupedByRow)
+            // 如果还有剩余的新时间点，填充为Empty
+            while (newTimeIndex < newTimeAxis.Count)
             {
-                var firstObjectInRow = group.OrderBy(obj => obj.StartTime).First();
-                firstObjectStartTimes.Add(firstObjectInRow.StartTime);
+                for (int col = 0; col < matrix.Cols; col++)
+                {
+                    newMatrix[newTimeIndex, col] = Matrix.Empty;
+                }
+                newTimeIndex++;
             }
-            return (MTX, firstObjectStartTimes);
+            
+            // 填充HoldBody部分
+            foreach (var note in ManiaNotes)
+            {
+                if (note.EndTime > note.StartTime)
+                {
+                    int startIndex = newTimeAxis.IndexOf(note.StartTime);
+                    int endIndex = newTimeAxis.IndexOf(note.EndTime);
+                    int colIndex = note.ColIndex.Value;
+
+                    // 在起始位置到结束位置之间填充-7表示HoldBody（包含结束位置）
+                    for (int i = startIndex + 1; i <= endIndex; i++)
+                    {
+                        // 只有当当前位置为空时才填充HoldBody标记
+                        if (newMatrix[i, colIndex] == Matrix.Empty)
+                        {
+                            newMatrix[i, colIndex] = Matrix.HoldBody;
+                        }
+                    }
+                }
+            }
+    
+            return (newMatrix, newTimeAxis);
         }
+        
     }
 
 }

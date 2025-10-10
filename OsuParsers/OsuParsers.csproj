@@ -1,17 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;</TargetFrameworks>
     <RootNamespace>OsuParsers</RootNamespace>
     <Authors>mrflashstudio</Authors>
     <Company />
-    <Version>1.8.0.4</Version>
+    <Version>1.8.1.0</Version>
     <Description>Forked for easier modification of Mania beatmaps</Description>
     <Copyright></Copyright>
     <RepositoryUrl>https://github.com/krrcream/OsuParsers</RepositoryUrl>
     <PackageProjectUrl>https://github.com/krrcream/OsuParsers</PackageProjectUrl>
-    <AssemblyVersion>1.8.0.4</AssemblyVersion>
-    <FileVersion>1.8.0.4</FileVersion>
-    <PackageVersion>1.8.0.4</PackageVersion>
+    <AssemblyVersion>1.8.1.0</AssemblyVersion>
+    <FileVersion>1.8.1.0</FileVersion>
+    <PackageVersion>1.8.1.0</PackageVersion>
     <PackageId>krrcream.OsuParsers</PackageId>
     <LangVersion>9.0</LangVersion>
   </PropertyGroup>
