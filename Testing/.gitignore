@@ -1,0 +1,16 @@
+﻿# .NET Build Output
+bin/
+obj/
+
+# JetBrains Rider IDE Files
+.idea/
+
+# Visual Studio Files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Temporary Files
+*.tmp
+*.temp

@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\OsuParsers\OsuParsers.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="DecodeTest\Tino &amp; Cha Shao Jun feat. Orihara RuruMashiro KanonHiiroLing Yuan Yousa - Chun Ri You (krrcream) [(LV.13) Another].osu" />
+      <Content Include="DecodeTest\Tino &amp; Cha Shao Jun feat. Orihara RuruMashiro KanonHiiroLing Yuan Yousa - Chun Ri You (krrcream) [(LV.13) Another].osu">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <None Remove="DecodeTest\32ki feat. Hatsune Miku &amp; Kasane Teto - Mesmerizer (krrcream) [(LV.14) Another].osu" />
+      <Content Include="DecodeTest\32ki feat. Hatsune Miku &amp; Kasane Teto - Mesmerizer (krrcream) [(LV.14) Another].osu">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
+</Project>
