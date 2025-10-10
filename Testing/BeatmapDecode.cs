@@ -10,7 +10,7 @@ string fullpath2 = Path.Combine(projectRoot, "DecodeTest", "32ki feat. Hatsune M
 Beatmap beatmap1 = BeatmapDecoder
     .Decode(fullPath1);
 //HOW TO USE (WHEN MODE IS MANIA)
-beatmap1.ReplaceHitObjectWithNewEndTime(0, 1000); //修改第一个音符的EndTime为1000ms
+beatmap1.ReplaceHitObjectWithNewEndTime(0, 1000); //修改第一个音符的EndTime为1000ms，这里因为1000小于starttime，会自动变成标准格式的ManiaNote
 Console.WriteLine("Note Matrix");
 Matrix matrix1 = beatmap1.getMTXandTimeAxis().Item1;
 var timeList = beatmap1.getMTXandTimeAxis().Item2;
