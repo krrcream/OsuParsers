@@ -1,8 +1,14 @@
 ﻿using System.Diagnostics;
+using System.Numerics;
 using System.Reflection;
 using OsuParsers.Beatmaps;
 using OsuParsers.Beatmaps.Objects.Mania;
 using OsuParsers.Decoders;
+using OsuParsers.Enums;
+using OsuParsers.Extensions;
+
+
+var PX = new newPositionX(10); // positionX对象，方便生成position.X或者对应的Vector2,简化代码
 
 string projectRoot = Directory.GetCurrentDirectory(); 
 string fullPath1 = Path.Combine(projectRoot, "DecodeTest", "Tino & Cha Shao Jun feat. Orihara RuruMashiro KanonHiiroLing Yuan Yousa - Chun Ri You (krrcream) [(LV.13) Another].osu");
@@ -10,7 +16,14 @@ string fullpath2 = Path.Combine(projectRoot, "DecodeTest", "32ki feat. Hatsune M
 Beatmap beatmap1 = BeatmapDecoder
     .Decode(fullPath1);
 //HOW TO USE (WHEN MODE IS MANIA)
-beatmap1.ReplaceHitObjectWithNewEndTime(0, 1000); //修改第一个音符的EndTime为1000ms，这里因为1000小于starttime，会自动变成标准格式的ManiaNote
+//用.AsManiaNote()方法将普通note转为maniaNote对象来使用maniaNote的特定方法
+beatmap1.HitObjects.UpdateHitObject(1, beatmap1.HitObjects[1].AsManiaNote().CloneNote(EndTime:5555)) ; //如果是note，EndTime无法直接修改，必须要克隆面条对象。这是安全替换坐标i的对象方法
+beatmap1.HitObjects[1].EndTime = 4444; //如果已经从note变成LN，可以直接修改
+beatmap1.HitObjects[1].Position = PX.Vector2(3); //改变轨道，Vector2是不可改变的对象，通过该方法简化修改轨道
+
+beatmap1.MetadataSection.Version = "TEST";
+beatmap1.Save(@"E:\Mug\osu\Songs\2320755 Tino & Cha Shao Jun feat Orihara Ruru_Mashiro Kanon_Hiiro_Ling Yuan Yousa - Chun Ri You\Tino & Cha Shao Jun feat. Orihara RuruMashiro KanonHiiroLing Yuan Yousa - Chun Ri You (krrcream) [TEST].osu");
+
 Console.WriteLine("Note Matrix");
 Matrix matrix1 = beatmap1.getMTXandTimeAxis().Item1;
 var timeList = beatmap1.getMTXandTimeAxis().Item2;
@@ -42,8 +55,8 @@ Console.WriteLine();
 Console.WriteLine("PathProperty");
 Console.WriteLine($"beatmap1.OriginalFilePath={beatmap1.OriginalFilePath}"); 
 Console.WriteLine();
-var allManiaObjects = beatmap1.ManiaNotes;
 
+var allManiaObjects = beatmap1.HitObjects.AsManiaNotes();
 var Note  = allManiaObjects[1];
 Console.WriteLine($"Beford change index note.Position.X: {beatmap1.HitObjects[1].Position.X}");
 if (Note is ManiaNote maniaNote)

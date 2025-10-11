@@ -39,7 +39,7 @@ namespace OsuParsers.Beatmaps.Objects.Mania
             }
         }
         public int? RowIndex { get; set; } 
-        public int? OriginalColIndex { get; private set; }
+        public int? OriginalColIndex { get; set; }
         // 懒加载属性
         public int? NoteCircleSize 
         { 

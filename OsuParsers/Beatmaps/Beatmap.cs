@@ -8,6 +8,7 @@ using System.Linq;
 using OsuParsers.Beatmaps.Objects.Mania;
 using OsuParsers.Encoders;
 using OsuParsers.Enums;
+using OsuParsers.Extensions;
 
 namespace OsuParsers.Beatmaps
 {
@@ -30,17 +31,6 @@ namespace OsuParsers.Beatmaps
         public double MaxBPM { get; set; } = 120 ;
         public double MinBPM { get; set; } = 120 ;
         
-        public List<ManiaNote> ManiaNotes
-        {
-            get
-            {
-                if (GeneralSection.Mode == Ruleset.Mania)
-                {
-                    return HitObjects.OfType<ManiaNote>().ToList();
-                }
-                return new List<ManiaNote>();
-            }
-        }
         
         public int Rows
         {
@@ -49,7 +39,8 @@ namespace OsuParsers.Beatmaps
                 if (GeneralSection.Mode != Ruleset.Mania)
                     return 0;
             
-                return ManiaNotes.LastOrDefault()?.RowIndex.Value + 1 ?? 0;
+                var lastNote = HitObjects.LastOrDefault(h => h is ManiaNote) as ManiaNote;
+                return lastNote?.RowIndex.Value + 1 ?? 0;
             }
         }
         
@@ -121,7 +112,7 @@ namespace OsuParsers.Beatmaps
                 throw new InvalidOperationException("当前模式不是Mania模式，无法执行此操作");
             
             var uniqueEndTimes = new HashSet<int>();
-            foreach (var note in ManiaNotes)
+            foreach (var note in HitObjects)
             {
                 uniqueEndTimes.Add(note.EndTime);
             }
@@ -135,7 +126,7 @@ namespace OsuParsers.Beatmaps
                 throw new InvalidOperationException("当前模式不是Mania模式，无法执行此操作");
 
             // 获取所有唯一的时间点并排序
-            var uniqueStartTimes = ManiaNotes.Select(n => n.StartTime).Distinct().OrderBy(t => t).ToList();
+            var uniqueStartTimes = HitObjects.Select(n => n.StartTime).Distinct().OrderBy(t => t).ToList();
     
             int timeCount = uniqueStartTimes.Count;
             int keyCount = OrgKeys;
@@ -144,11 +135,11 @@ namespace OsuParsers.Beatmaps
             var MTX = new Matrix(timeCount, keyCount);
             
             // 填充矩阵
-            for (int i = 0; i < ManiaNotes.Count; i++)
+            for (int i = 0; i < HitObjects.Count; i++)
             {
-                var note = ManiaNotes[i];
+                var note = HitObjects[i];
                 int timeIndex = uniqueStartTimes.IndexOf(note.StartTime);
-                int colIndex = note.ColIndex.Value;
+                int colIndex = note.AsManiaNote().ColIndex.Value;
         
                 // 如果该位置已经有值，则需要特殊处理（例如Long Note）
                 if (MTX[timeIndex, colIndex] != Matrix.Empty)
@@ -223,13 +214,13 @@ namespace OsuParsers.Beatmaps
             }
             
             // 填充HoldBody部分
-            foreach (var note in ManiaNotes)
+            foreach (var note in HitObjects)
             {
                 if (note.EndTime > note.StartTime)
                 {
                     int startIndex = newTimeAxis.IndexOf(note.StartTime);
                     int endIndex = newTimeAxis.IndexOf(note.EndTime);
-                    int colIndex = note.ColIndex.Value;
+                    int colIndex = note.AsManiaNote().ColIndex.Value;
 
                     // 在起始位置到结束位置之间填充-7表示HoldBody（包含结束位置）
                     for (int i = startIndex + 1; i <= endIndex; i++)

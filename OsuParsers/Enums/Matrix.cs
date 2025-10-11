@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace OsuParsers.Beatmaps
+namespace OsuParsers.Enums
 {
     public class Matrix
     {
