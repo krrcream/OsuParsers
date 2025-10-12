@@ -1,7 +1,9 @@
-Forked for easier modification of Mania beatmaps
+Forked for easier modification of Mania beatmaps  
+[![NuGet](https://img.shields.io/nuget/v/krrcream.OsuParsers.svg)](https://www.nuget.org/packages/krrcream.OsuParsers) [![NuGet Downloads](https://img.shields.io/nuget/dt/krrcream.OsuParsers.svg)](https://www.nuget.org/packages/krrcream.OsuParsers)
+
 -------------------------------------
 
-# OsuParsers [![CodeFactor](https://www.codefactor.io/repository/github/mrflashstudio/osuparsers/badge)](https://www.codefactor.io/repository/github/mrflashstudio/osuparsers) [![nuget](https://img.shields.io/nuget/v/OsuParsers.svg)](https://www.nuget.org/packages/OsuParsers)
+# OsuParsers (Forked)  [![CodeFactor](https://www.codefactor.io/repository/github/mrflashstudio/osuparsers/badge)](https://www.codefactor.io/repository/github/mrflashstudio/osuparsers) [![nuget](https://img.shields.io/nuget/v/OsuParsers.svg)](https://www.nuget.org/packages/OsuParsers)
 
 Library for parsing files associated with osu! written in C#
 
