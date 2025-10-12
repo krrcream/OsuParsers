@@ -342,5 +342,200 @@ namespace OsuParsers.Enums
   
         
     }
-    
+
+    public class DoubleMatrix
+    {
+        /// <summary>
+        /// 双精度浮点数矩阵封装，适用于各种矩阵操作
+        /// </summary>
+
+        private readonly double[] _data;
+
+        private readonly int _rows;
+        private readonly int _cols;
+
+        /// <summary>
+        /// 空位置常量
+        /// </summary>
+        public const double Empty = -1.0;
+
+        /// <summary>
+        /// 行数
+        /// </summary>
+        public int Rows => _rows;
+
+        /// <summary>
+        /// 列数
+        /// </summary>
+        public int Cols => _cols;
+
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        public DoubleMatrix(int rows, int cols)
+        {
+            _rows = rows;
+            _cols = cols;
+            _data = new double[rows * cols];
+            Array.Fill(_data, Empty);
+        }
+
+        /// <summary>
+        /// 从现有数组构造
+        /// </summary>
+        public DoubleMatrix(double[,] data)
+        {
+            _rows = data.GetLength(0);
+            _cols = data.GetLength(1);
+            _data = new double[_rows * _cols];
+
+            for (int i = 0; i < _rows; i++)
+            {
+                for (int j = 0; j < _cols; j++)
+                {
+                    _data[i * _cols + j] = data[i, j];
+                }
+            }
+        }
+
+        /// <summary>
+        /// 索引器
+        /// </summary>
+        public double this[int row, int col]
+        {
+            get
+            {
+                ThrowIfInvalidPosition(row, col);
+                return GetRowSpan(row)[col];
+            }
+            set
+            {
+                ThrowIfInvalidPosition(row, col);
+                GetRowSpan(row)[col] = value;
+            }
+        }
+
+        /// <summary>
+        /// 获取内部数组（用于兼容现有代码）
+        /// </summary>
+        public double[,] GetData()
+        {
+            var result = new double[_rows, _cols];
+            var resultFlat = MemoryMarshal.CreateSpan(ref result[0, 0], _data.Length);
+            _data.AsSpan().CopyTo(resultFlat);
+            return result;
+        }
+
+        /// <summary>
+        /// 复制数据到另一个矩阵
+        /// </summary>
+        public void CopyTo(DoubleMatrix target)
+        {
+            if (Rows != target.Rows || Cols != target.Cols)
+                throw new ArgumentException("Matrix dimensions must match");
+            Array.Copy(_data, target._data, _data.Length);
+        }
+
+        /// <summary>
+        /// 从另一个矩阵复制数据
+        /// </summary>
+        public void CopyFrom(DoubleMatrix source)
+        {
+            source.CopyTo(this);
+        }
+
+        /// <summary>
+        /// 获取行数据作为 Span（用于 MemoryMarshal）
+        /// </summary>
+        public Span<double> GetRowSpan(int row)
+        {
+            ThrowIfInvalidRow(row);
+            return MemoryMarshal.CreateSpan(ref _data[row * _cols], _cols);
+        }
+
+        /// <summary>
+        /// 克隆矩阵
+        /// </summary>
+        public DoubleMatrix Clone()
+        {
+            var clone = new DoubleMatrix(Rows, Cols);
+            CopyTo(clone);
+            return clone;
+        }
+
+        /// <summary>
+        /// 批量操作
+        /// </summary>
+        /// <returns></returns>
+        public Span<double> AsSpan() => _data.AsSpan();
+
+        private bool IsValidPosition(int row, int col) =>
+            row >= 0 && row < _rows && col >= 0 && col < _cols;
+
+        private void ThrowIfInvalidPosition(int row, int col)
+        {
+            if (!IsValidPosition(row, col))
+                throw new IndexOutOfRangeException($"Index out of range: row={row}, col={col}");
+        }
+
+        private void ThrowIfInvalidColumn(int col)
+        {
+            if (col < 0 || col >= _cols)
+                throw new IndexOutOfRangeException($"Column index out of range: {col}");
+        }
+
+        private void ThrowIfInvalidRow(int row)
+        {
+            if (row < 0 || row >= _rows)
+                throw new IndexOutOfRangeException($"Row index out of range: {row}");
+        }
+
+        /// <summary>
+        /// 交换两列的数据
+        /// </summary>
+        /// <param name="colA">第一列索引</param>
+        /// <param name="colB">第二列索引</param>
+        public void SwapColumns(int colA, int colB)
+        {
+            // 检查列索引有效性
+            ThrowIfInvalidColumn(colA);
+            ThrowIfInvalidColumn(colB);
+
+            // 如果是同一列，无需交换
+            if (colA == colB)
+                return;
+
+            // 逐行交换两列的数据
+            for (int row = 0; row < Rows; row++)
+            {
+                int indexA = row * _cols + colA;
+                int indexB = row * _cols + colB;
+                (_data[indexA], _data[indexB]) = (_data[indexB], _data[indexA]);
+            }
+        }
+
+        /// <summary>
+        /// 交换两行的数据
+        /// </summary>
+        /// <param name="rowA">第一行索引</param>
+        /// <param name="rowB">第二行索引</param>
+        public void SwapRows(int rowA, int rowB)
+        {
+            // 检查行索引有效性
+            if (rowA < 0 || rowA >= Rows)
+                throw new IndexOutOfRangeException($"Row A index out of range: {rowA}");
+            if (rowB < 0 || rowB >= Rows)
+                throw new IndexOutOfRangeException($"Row B index out of range: {rowB}");
+
+            // 如果是同一行，无需交换
+            if (rowA == rowB)
+                return;
+
+            // 使用Span进行高效行交换
+            var spanA = GetRowSpan(rowA);
+            var spanB = GetRowSpan(rowB);
+            spanA.CopyTo(spanB);
+            spanB.CopyTo(spanA);
+        }
+    }
 }
