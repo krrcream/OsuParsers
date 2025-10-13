@@ -21,4 +21,7 @@
   <ItemGroup>
     <Content Include=".github\workflows\publish-nuget.yml" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include=".nuget\nuget.config" />
+  </ItemGroup>
 </Project>
