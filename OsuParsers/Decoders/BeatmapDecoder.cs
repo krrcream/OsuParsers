@@ -416,24 +416,36 @@ namespace OsuParsers.Decoders
             if (Beatmap.GeneralSection.Mode == Ruleset.Mania)
             {
                 int CS = (int)Beatmap.DifficultySection.CircleSize;
-                int rowIndex = 0;
+        
+                // 先按时间排序，然后按X坐标排序
                 var sortedObjects = Beatmap.HitObjects
                     .OrderBy(h => h.StartTime)
                     .ThenBy(h => h.Position.X)
-                    .Select((hitObject, index) =>
-                    {
-                        if (hitObject is ManiaNote maniaNote)
-                        {
-                            maniaNote.RowIndex = index; 
-                            maniaNote.InitializeRowData(CS);
-                            maniaNote.BeatLengthOfThisNote = GetBeatLengthForTime(maniaNote.StartTime);
-                        }
-                        return hitObject;
-                    })
                     .ToList();
+
+                // 按时间点分组并分配行索引
+                var timeGroups = sortedObjects
+                    .Where(h => h is ManiaNote)
+                    .Cast<ManiaNote>()
+                    .GroupBy(note => note.StartTime)
+                    .ToList();
+
+                // 为每组相同时间点的音符分配相同的行索引
+                for (int i = 0; i < timeGroups.Count; i++)
+                {
+                    var group = timeGroups[i];
+                    foreach (var maniaNote in group)
+                    {
+                        maniaNote.RowIndex = i;
+                        maniaNote.InitializeRowData(CS);
+                        maniaNote.BeatLengthOfThisNote = GetBeatLengthForTime(maniaNote.StartTime);
+                    }
+                }
+
                 Beatmap.HitObjects = sortedObjects;
             }
         }
+
         
         private void ParseColours(string line)
         {

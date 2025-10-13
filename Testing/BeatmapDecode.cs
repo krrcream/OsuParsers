@@ -22,7 +22,7 @@ beatmap1.HitObjects[1].EndTime = 4444; //如果已经从note变成LN，可以直
 beatmap1.HitObjects[1].Position = PX.Vector2(3); //改变轨道，Vector2是不可改变的对象，通过该方法简化修改轨道
 
 beatmap1.MetadataSection.Version = "TEST";
-beatmap1.Save(@"E:\Mug\osu\Songs\2320755 Tino & Cha Shao Jun feat Orihara Ruru_Mashiro Kanon_Hiiro_Ling Yuan Yousa - Chun Ri You\Tino & Cha Shao Jun feat. Orihara RuruMashiro KanonHiiroLing Yuan Yousa - Chun Ri You (krrcream) [TEST].osu");
+// beatmap1.Save(@"E:\Mug\osu\Songs\2320755 Tino & Cha Shao Jun feat Orihara Ruru_Mashiro Kanon_Hiiro_Ling Yuan Yousa - Chun Ri You\Tino & Cha Shao Jun feat. Orihara RuruMashiro KanonHiiroLing Yuan Yousa - Chun Ri You (krrcream) [TEST].osu");
 
 Console.WriteLine("Note Matrix");
 Matrix matrix1 = beatmap1.getMTXandTimeAxis().Item1;
