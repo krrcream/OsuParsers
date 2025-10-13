@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace OsuParsers.Enums
@@ -733,4 +734,5 @@ namespace OsuParsers.Enums
             spanB.CopyTo(spanA);
         }
     }
+    
 }

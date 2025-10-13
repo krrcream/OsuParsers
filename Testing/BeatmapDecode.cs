@@ -6,7 +6,7 @@ using OsuParsers.Beatmaps.Objects.Mania;
 using OsuParsers.Decoders;
 using OsuParsers.Enums;
 using OsuParsers.Extensions;
-
+using OsuParsers.Helpers;
 
 var PX = new newPositionX(10); // positionX对象，方便生成position.X或者对应的Vector2,简化代码
 

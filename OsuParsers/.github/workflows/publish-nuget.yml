@@ -1,0 +1,75 @@
+﻿# .github/workflows/publish-nuget.yml
+
+name: Publish to NuGet
+
+on:
+  # 当打上 v 开头的 tag 时触发
+  push:
+    tags:
+      - 'v*.*.*.*'  # 匹配 v1.8.2.6 这类格式
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # 需要完整历史记录来解析版本号
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '7.x'  # 或根据需要选择 6.x / 8.x
+
+      - name: Get version from tag
+        id: version
+        run: |
+          tag=$(echo ${{ github.ref_name }} | sed 's/^v//')
+          echo "version=$tag" >> $GITHUB_ENV
+          echo "tag=${{ github.ref_name }}" >> $GITHUB_ENV
+
+      - name: Update csproj version
+        run: |
+          # 使用 xmlstarlet 修改 csproj 文件中的 Version 字段
+          xmlstarlet ed -S -O -i ./OsuParsers/OsuParsers.csproj \
+            -s "//PropertyGroup[not(@Condition)]" \
+            -o "Version" \
+            -v "${{ env.version }}" \
+            -p > ./OsuParsers/OsuParsers.csproj.tmp
+          mv ./OsuParsers/OsuParsers.csproj.tmp ./OsuParsers/OsuParsers.csproj
+
+          # 同步其他相关字段（AssemblyVersion, FileVersion, PackageVersion）
+          xmlstarlet ed -S -O -i ./OsuParsers/OsuParsers.csproj \
+            -s "//PropertyGroup[not(@Condition)]" \
+            -o "AssemblyVersion" \
+            -v "${{ env.version }}" \
+            -p > ./OsuParsers/OsuParsers.csproj.tmp
+          mv ./OsuParsers/OsuParsers.csproj.tmp ./OsuParsers/OsuParsers.csproj
+
+          xmlstarlet ed -S -O -i ./OsuParsers/OsuParsers.csproj \
+            -s "//PropertyGroup[not(@Condition)]" \
+            -o "FileVersion" \
+            -v "${{ env.version }}" \
+            -p > ./OsuParsers/OsuParsers.csproj.tmp
+          mv ./OsuParsers/OsuParsers.csproj.tmp ./OsuParsers/OsuParsers.csproj
+
+          xmlstarlet ed -S -O -i ./OsuParsers/OsuParsers.csproj \
+            -s "//PropertyGroup[not(@Condition)]" \
+            -o "PackageVersion" \
+            -v "${{ env.version }}" \
+            -p > ./OsuParsers/OsuParsers.csproj.tmp
+          mv ./OsuParsers/OsuParsers.csproj.tmp ./OsuParsers/OsuParsers.csproj
+
+      - name: Build and Pack
+        run: |
+          cd OsuParsers
+          dotnet restore
+          dotnet pack --output ../artifacts --no-build --include-symbols
+
+      - name: Publish to NuGet
+        if: startsWith(github.ref_name, 'v')
+        run: |
+          dotnet nuget push ../artifacts/*.nupkg \
+            -s https://api.nuget.org/v3/index.json \
+            -k ${{ secrets.NUGET_API_KEY }}
