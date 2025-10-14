@@ -4,15 +4,13 @@
     <RootNamespace>OsuParsers</RootNamespace>
     <Authors>mrflashstudio</Authors>
     <Company />
-    <Version>1.8.2.5</Version>
     <Description>Forked for easier modification of Mania beatmaps</Description>
     <Copyright></Copyright>
     <RepositoryUrl>https://github.com/krrcream/OsuParsers</RepositoryUrl>
     <PackageProjectUrl>https://github.com/krrcream/OsuParsers</PackageProjectUrl>
-    <AssemblyVersion>1.8.2.5</AssemblyVersion>
-    <FileVersion>1.8.2.5</FileVersion>
-    <PackageVersion>1.8.2.5</PackageVersion>
     <PackageId>krrcream.OsuParsers</PackageId>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <IsPackable>true</IsPackable>
     <LangVersion>12.0</LangVersion>
   </PropertyGroup>
   <ItemGroup>
