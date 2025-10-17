@@ -116,7 +116,7 @@ jobs:
     - name: Push to NuGet.org
       if: startsWith(github.ref, 'refs/tags/')
       run: |        
-        dotnet nuget push ./packages/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        dotnet nuget push ./OsuParsers/packages/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
 
     # Upload build artifacts
     - name: Upload build artifacts
