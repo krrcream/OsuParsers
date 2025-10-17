@@ -77,18 +77,6 @@ jobs:
         }
       shell: pwsh
       
-      # 获取 tag 名称用于版本号
-    - name: Get version from tag
-      id: get_version
-      run: |
-        if ($env:GITHUB_REF.StartsWith("refs/tags/")) {
-          $tag = $env:GITHUB_REF.Replace("refs/tags/", "")
-          echo "VERSION=$tag" >> $env:GITHUB_ENV
-        } else {
-          echo "VERSION=0.0.0" >> $env:GITHUB_ENV
-        }
-      shell: pwsh
-      
       # 修改 .csproj 文件中的版本信息（仅当有 tag 时）
     - name: Update version in csproj
       if: startsWith(github.ref, 'refs/tags/')
