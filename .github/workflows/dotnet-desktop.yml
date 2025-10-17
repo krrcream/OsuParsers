@@ -40,7 +40,6 @@ name: .NET Core Desktop
 
 on:
   push:
-    branches: [ "dev" ]
     tags:
       - '*'
   pull_request:
@@ -112,14 +111,14 @@ jobs:
       run: |        
         dotnet pack ${{ env.Project_Path }} -c ${{ matrix.configuration }} -o ./packages /p:PackageVersion=${{ env.VERSION }} /p:Version=${{ env.VERSION }}
         
-        # 获取生成的 .nupkg 文件路径（只取第一个）
+    # 获取生成的 .nupkg 文件路径（只取第一个）
         $nupkg_file = Get-ChildItem ./packages/*.nupkg | Select-Object -First 1
         if (-not $nupkg_file) {
           Write-Error "No .nupkg file found in ./packages"
           exit 1
         }
         dotnet nuget push ./packages/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
-        # 推送包
+    # 推送包
         dotnet nuget push $nupkg_file.FullName --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
       shell: pwsh
       
