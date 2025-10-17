@@ -69,7 +69,8 @@ jobs:
       run: |        
         if ($env:GITHUB_REF.StartsWith("refs/tags/")) {
           $tag = $env:GITHUB_REF.Replace("refs/tags/", "")
-          echo "VERSION=$tag" >> $env:GITHUB_ENV
+          $version = $tag -replace "^v", "" -replace "^V", ""
+          echo "VERSION=$version" >> $env:GITHUB_ENV
         } else {
           echo "VERSION=0.0.0" >> $env:GITHUB_ENV
         }
