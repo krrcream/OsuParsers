@@ -1,0 +1,127 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+# This workflow will build, test, sign and package a WPF or Windows Forms desktop application
+# built on .NET Core.
+# To learn how to migrate your existing application to .NET Core,
+# refer to https://docs.microsoft.com/en-us/dotnet/desktop-wpf/migration/convert-project-from-net-framework
+#
+# To configure this workflow:
+#
+# 1. Configure environment variables
+# GitHub sets default environment variables for every workflow run.
+# Replace the variables relative to your project in the "env" section below.
+#
+# 2. Signing
+# Generate a signing certificate in the Windows Application
+# Packaging Project or add an existing signing certificate to the project.
+# Next, use PowerShell to encode the .pfx file using Base64 encoding
+# by running the following Powershell script to generate the output string:
+#
+# $pfx_cert = Get-Content '.\SigningCertificate.pfx' -Encoding Byte
+# [System.Convert]::ToBase64String($pfx_cert) | Out-File 'SigningCertificate_Encoded.txt'
+#
+# Open the output file, SigningCertificate_Encoded.txt, and copy the
+# string inside. Then, add the string to the repo as a GitHub secret
+# and name it "Base64_Encoded_Pfx."
+# For more information on how to configure your signing certificate for
+# this workflow, refer to https://github.com/microsoft/github-actions-for-desktop-apps#signing
+#
+# Finally, add the signing certificate password to the repo as a secret and name it "Pfx_Key".
+# See "Build the Windows Application Packaging project" below to see how the secret is used.
+#
+# For more information on GitHub Actions, refer to https://github.com/features/actions
+# For a complete CI/CD sample to get started with GitHub Action workflows for Desktop Applications,
+# refer to https://github.com/microsoft/github-actions-for-desktop-apps
+
+name: .NET Core Desktop
+
+on:
+  push:
+    branches: [ "dev" ]
+    tags:
+      - '*'
+  pull_request:
+    branches: [ "dev" ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        configuration: [Release]  # 通常只在 Release 配置下发布
+
+    runs-on: windows-latest
+
+    env:
+      Solution_Name: OsuParsers.sln
+      Test_Project_Path: OsuParsers/OsuParsers.Tests/OsuParsers.Tests.csproj
+      Project_Path: OsuParsers/OsuParsers/OsuParsers.csproj
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    # 获取 tag 名称用于版本号
+    - name: Get version from tag
+      id: get_version
+      run: |        
+        if ($env:GITHUB_REF.StartsWith("refs/tags/")) {
+          $tag = $env:GITHUB_REF.Replace("refs/tags/", "")
+          echo "VERSION=$tag" >> $env:GITHUB_ENV
+        } else {
+          echo "VERSION=0.0.0" >> $env:GITHUB_ENV
+        }
+      shell: pwsh
+
+    # Install the .NET Core workload
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    # Setup MSBuild
+    - name: Setup MSBuild.exe
+      uses: microsoft/setup-msbuild@v2
+
+    # Execute unit tests
+    - name: Execute unit tests
+      run: dotnet test ${{ env.Test_Project_Path }} --configuration ${{ matrix.configuration }}
+
+    # Restore the application
+    - name: Restore the application
+      run: msbuild ${{ env.Project_Path }} /t:Restore /p:Configuration=${{ matrix.configuration }}
+
+    # Build the application
+    - name: Build the application
+      run: msbuild ${{ env.Project_Path }} /p:Configuration=${{ matrix.configuration }}
+
+    # 打包 NuGet 包（仅当有 tag 时）
+    - name: Pack NuGet package
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |        
+        dotnet pack ${{ env.Project_Path }} -c ${{ matrix.configuration }} -o ./packages /p:PackageVersion=${{ env.VERSION }} /p:Version=${{ env.VERSION }}
+
+    # 推送 NuGet 包（仅当有 tag 时）
+    - name: Push to NuGet.org
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |        
+        dotnet nuget push ./packages/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+    # Upload build artifacts
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: Built Application
+        path: OsuParsers/OsuParsers/bin/${{ matrix.configuration }}/net8.0/*
+
+    # 上传 NuGet 包作为 artifact
+    - name: Upload NuGet packages
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: actions/upload-artifact@v4
+      with:
+        name: NuGet Packages
+        path: ./packages/*
