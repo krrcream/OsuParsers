@@ -473,9 +473,13 @@ namespace OsuParsers.Decoders
         private void ParseHitObjects(string line)
         {
             string[] tokens = line.Split(',');
-
-            Vector2 position = new Vector2(ParseHelper.ToFloat(tokens[0]), ParseHelper.ToFloat(tokens[1]));
-
+            float x = ParseHelper.ToFloat(tokens[0]);
+            float y = ParseHelper.ToFloat(tokens[1]);
+            // 只对 mania 模式进行边界检查
+            if (Beatmap.GeneralSection.Mode == Ruleset.Mania && x >= 512)
+                x = 511;
+        
+            Vector2 position = new Vector2(x, y);
             int startTime = Convert.ToInt32(tokens[2]);
 
             HitObjectType type = (HitObjectType)int.Parse(tokens[3]);
