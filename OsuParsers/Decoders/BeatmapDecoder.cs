@@ -415,6 +415,9 @@ namespace OsuParsers.Decoders
         {
             if (Beatmap.GeneralSection.Mode == Ruleset.Mania)
             {
+                // 设置 OrgKeys 值
+                Beatmap.SetOrgKeys((int)Beatmap.DifficultySection.CircleSize);
+                
                 int CS = (int)Beatmap.DifficultySection.CircleSize;
         
                 // 先按时间排序，然后按X坐标排序
