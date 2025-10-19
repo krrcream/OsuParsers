@@ -385,8 +385,6 @@ namespace OsuParsers.Decoders
                 Beatmap.BPMEvents.Add(bpmEvent);
             }
             Beatmap.BPMEvents.Sort((x, y) => x.Offset.CompareTo(y.Offset));
-            Beatmap.MaxBPM = Beatmap.BPMEvents.Max(x => x.BPM);
-            Beatmap.MinBPM = Beatmap.BPMEvents.Min(x => x.BPM);
             Beatmap.BPMEvents.RemoveAll(bpmEvent => bpmEvent.BeatLength < 0);
             for (int i = 0; i < Beatmap.BPMEvents.Count; i++)
             {
@@ -408,6 +406,8 @@ namespace OsuParsers.Decoders
                 })
                 .OrderByDescending(x => x.TotalDuration)
                 .FirstOrDefault();
+            Beatmap.MaxBPM = Beatmap.BPMEvents.Max(x => x.BPM);
+            Beatmap.MinBPM = Beatmap.BPMEvents.Min(x => x.BPM);
             Beatmap.MainBPM = groupedBPMs?.BPM ?? -1;
         }
 
