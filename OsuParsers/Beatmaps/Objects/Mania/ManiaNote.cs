@@ -14,7 +14,7 @@ namespace OsuParsers.Beatmaps.Objects.Mania
         private bool _isFirstSetNoteCircleSize = true;
         
         //in this StartTime's BeatLength. default is 500ms
-        public int BeatLengthOfThisNote { get; set; } = 500; 
+        public double BeatLengthOfThisNote { get; set; } = 500; 
         
         //use to generate matrix
         public int? ColIndex
