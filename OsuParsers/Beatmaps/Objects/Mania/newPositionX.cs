@@ -42,7 +42,12 @@ public class newPositionX
     public Vector2 Vector2(int column)
     {
         return new(X[column], 192);
-    }    
+    }
+
+    public int PositionX(int column)
+    {
+        return X[column];
+    }
     
     public int getColumn(int column)
     {

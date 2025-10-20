@@ -21,6 +21,10 @@
       <Content Include="DecodeTest\32ki feat. Hatsune Miku &amp; Kasane Teto - Mesmerizer (krrcream) [(LV.14) Another].osu">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </Content>
+      <None Remove="DecodeTest\stdtest.osu" />
+      <Content Include="DecodeTest\stdtest.osu">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>

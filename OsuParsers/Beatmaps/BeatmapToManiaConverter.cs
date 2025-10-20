@@ -23,7 +23,7 @@ namespace OsuParsers.Beatmaps
         /// <param name="beatmap">要转换的 Beatmap</param>
         /// <param name="targetKeyCount">目标键数（列数）</param>
         /// <returns>转换后的 Beatmap</returns>
-        public static Beatmap ConvertToMania(Beatmap beatmap, int targetKeyCount = 4)
+        public static Beatmap ConvertToManiaMode(this Beatmap beatmap, int targetKeyCount = 4)
         {
             if (beatmap == null)
                 throw new ArgumentNullException(nameof(beatmap));
