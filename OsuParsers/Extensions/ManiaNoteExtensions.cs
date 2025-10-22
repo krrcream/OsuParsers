@@ -13,17 +13,17 @@ namespace OsuParsers.Extensions
         /// </summary>
         /// <param name="existingNote">原始音符</param>
         /// <param name="StartTime">新的开始时间（不指定则保持原值）</param>
-        /// <param name="NewColumn">新的列位置，自动计算position.X（不指定则保持原值）</param>
+        /// <param name="PositionX">新的列位置position.X</param>
         /// <param name="EndTime">新的结束时间（不指定则保持原值）</param>
         /// <returns>新的音符对象</returns>
         public static ManiaNote CloneNote(this ManiaNote existingNote, 
-            int? NewColumn = null, 
+            int? PositionX = null, 
             int? StartTime = null, 
             int? EndTime = null)
         {
             // 使用原始值作为默认
             var startTime = StartTime ?? existingNote.StartTime;
-            var x = NewColumn ?? existingNote.Position.X;
+            var x = PositionX ?? existingNote.Position.X;
             var endTime = EndTime ?? existingNote.EndTime;
 
             ManiaNote newNote;
