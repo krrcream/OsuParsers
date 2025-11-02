@@ -374,7 +374,7 @@ namespace OsuParsers.Decoders
                 var nextOffset = (i + 1 <  Beatmap.TimingPoints.Count) ? 
                     Beatmap.TimingPoints[i + 1].Offset : 
                     Beatmap.GeneralSection.Length;
-                double calculatedBPM = TP.BeatLength != 0 ? (Math.Round(60000.0 / Math.Abs(TP.BeatLength),3)) : 0;
+                double calculatedBPM = TP.BeatLength <= 0 ? TP.BeatLength : Math.Round(60000.0 / TP.BeatLength,3);
                 var bpmEvent = new BPMEvent
                 {
                     Offset = TP.Offset,
@@ -384,10 +384,11 @@ namespace OsuParsers.Decoders
                 };
                 Beatmap.BPMEvents.Add(bpmEvent);
             }
+            Beatmap.BPMEvents.RemoveAll(bpmEvent => bpmEvent.BeatLength < 0);
             Beatmap.BPMEvents.Sort((x, y) => x.Offset.CompareTo(y.Offset));
             Beatmap.MaxBPM = Beatmap.BPMEvents.Max(x => x.BPM);
             Beatmap.MinBPM = Beatmap.BPMEvents.Min(x => x.BPM);
-            Beatmap.BPMEvents.RemoveAll(bpmEvent => bpmEvent.BeatLength < 0);
+            
             for (int i = 0; i < Beatmap.BPMEvents.Count; i++)
             {
                 if (i < Beatmap.BPMEvents.Count - 1)
