@@ -44,13 +44,19 @@ namespace OsuParsers.Beatmaps
             }
         }
         
+        // 原始keys属性
+        private int _orgKeys;
+        internal void SetOrgKeys(int keys)
+        {
+            _orgKeys = keys;
+        }
         public int OrgKeys
         {
             get
             {
                 if (GeneralSection.Mode != Ruleset.Mania)
                     return 0;
-                return (int)DifficultySection.CircleSize;
+                return _orgKeys;
             }
         }
         
